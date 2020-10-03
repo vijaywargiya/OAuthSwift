@@ -286,25 +286,22 @@ open class OAuthSwiftClient: NSObject {
             case .failure(let error):
                 switch error {
                 case OAuthSwiftError.tokenExpired:
-                    if let onTokenRenewal = onTokenRenewal {
-                        let renewCompletionHandler: OAuthSwift.TokenCompletionHandler = { result in
-                            switch result {
-                            case .success(let (credential, _, _)):
+                    let renewCompletionHandler: OAuthSwift.TokenCompletionHandler = { result in
+                        switch result {
+                        case .success(let (credential, _, _)):
+                            
+                            if let onTokenRenewal = onTokenRenewal {
                                 onTokenRenewal(.success(credential))
-                                this.requestWithAutomaticAccessTokenRenewal(url: url, method: method, parameters: parameters, headers: headers, contentType: contentType, accessTokenBasicAuthentification: accessTokenBasicAuthentification, accessTokenUrl: accessTokenUrl, onTokenRenewal: nil, completionHandler: completion)
-                            case .failure(let error):
-                                if let completion = completion {
-                                    completion(.failure(.tokenExpired(error: error)))
-                                }
+                            }
+                            this.requestWithAutomaticAccessTokenRenewal(url: url, method: method, parameters: parameters, headers: headers, contentType: contentType, accessTokenBasicAuthentification: accessTokenBasicAuthentification, accessTokenUrl: accessTokenUrl, onTokenRenewal: nil, completionHandler: completion)
+                        case .failure(let error):
+                            if let completion = completion {
+                                completion(.failure(.tokenExpired(error: error)))
                             }
                         }
-
-                        _ = this.renewAccessToken(accessTokenUrl: accessTokenUrl, withRefreshToken: this.credential.oauthRefreshToken, headers: headers, contentType: contentType, accessTokenBasicAuthentification: accessTokenBasicAuthentification, completionHandler: renewCompletionHandler)
-                    } else {
-                        if let completion = completion {
-                            completion(.failure(.tokenExpired(error: nil)))
-                        }
                     }
+                    
+                    _ = this.renewAccessToken(accessTokenUrl: accessTokenUrl, withRefreshToken: this.credential.oauthRefreshToken, headers: headers, contentType: contentType, accessTokenBasicAuthentification: accessTokenBasicAuthentification, completionHandler: renewCompletionHandler)
 
                 default:
                     if let completion = completion {
